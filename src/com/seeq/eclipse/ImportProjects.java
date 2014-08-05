@@ -1,15 +1,24 @@
 package com.seeq.eclipse;
 
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
 
-import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.*;
-import org.eclipse.equinox.app.*;
-import org.osgi.framework.*;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.equinox.app.IApplicationContext;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 
 public class ImportProjects implements org.eclipse.ui.IStartup {
+	
+	private static boolean exitOnFinish = false;
 	
 	private String getImportPath() {
 		BundleContext context = Activator.getContext();
@@ -23,8 +32,11 @@ public class ImportProjects implements org.eclipse.ui.IStartup {
         		i++;
         		if (i < args.length) {
 	        		importPath = args[i];
-	        		break;
+	        		//break;
         		}
+        	}
+        	else if(arg.compareToIgnoreCase("-exit_on_finish") == 0) {
+        		exitOnFinish = true;
         	}
         }
         
@@ -62,25 +74,48 @@ public class ImportProjects implements org.eclipse.ui.IStartup {
 		
 		String importPath = this.getImportPath();
 		
-		System.out.println(String.format("Searching for projects in %s", importPath));
-		List<File> projectFiles = this.findFilesRecursively(importPath, "\\.project");
-        
-		for (File projectFile : projectFiles) {
-			try {
-				IWorkspace workspace = ResourcesPlugin.getWorkspace();
-				IProjectDescription description = workspace.loadProjectDescription(
-						new Path(projectFile.toString()));
-				IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(description.getName());
-				if (project.isOpen() == false) {
-					System.out.println(String.format("Importing project %s", description.getName()));
-					project.create(description, null);
-					project.open(null);
-				} else {
-					System.out.println(String.format("Refreshing project %s", description.getName()));
+		if (importPath != null) {
+			//System.out.println(String.format("Searching for projects in %s", importPath));
+			List<File> projectFiles = this.findFilesRecursively(importPath, "\\.project");
+			
+			IWorkspace workspace = ResourcesPlugin.getWorkspace();
+
+			ImportMonitor monitor = new ImportMonitor(exitOnFinish);
+			for (File projectFile : projectFiles) {
+				IProjectDescription description = null;
+				try {
+					
+					description = workspace.loadProjectDescription(
+							new Path(projectFile.toString()));
+					
+					IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(description.getName());
+					
+					project.delete(false, true, null);
+					
+					project = ResourcesPlugin.getWorkspace().getRoot().getProject(description.getName());
+					
+					if (project.isOpen() == false) {
+						//System.out.println(String.format("Importing project %s", description.getName()));
+						
+						if(!project.exists()) {
+							project.create(description, null);
+						}
+												
+						project.open(null);
+					}
+					//System.out.println(String.format("Refreshing project %s", description.getName()));
 					project.refreshLocal(IResource.DEPTH_INFINITE, null);
+					System.out.println(String.format("Project Import %s SUCCESS", description.getName()));
+					workspace.save(true, monitor);
+				} catch (CoreException e) {
+					if(description != null) {
+						System.out.println(String.format("Project Import %s FAILED", description.getName()));
+					}
+					else {
+						e.printStackTrace();
+					}
+					monitor.done();
 				}
-			} catch (CoreException e) {
-				e.printStackTrace();
 			}
 		}
 	}
