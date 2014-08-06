@@ -12,22 +12,20 @@ Place the [com.seeq.eclipse.importprojects](jar/com.seeq.eclipse.importprojects_
 
 When launching Eclipse two commands are available:
 
-- `-import <root project folder>`
-- `-exit_on_finish`
-
-The first will cause Eclipse to recursively search the supplied folder for *.project* files and import them into the workspace. If they are already present in the workspace, they will be deleted and re-created (hard refresh).
-
-The second will cause eclipse to exit once it has finished adding and refreshing the projects. Usage only make sense to be used in-conjunction with the first. 
+* **-import \<root project folder\>**: The first will cause Eclipse to recursively search the supplied folder for *.project* files and import them into the workspace. If they are already present in the workspace, they will be deleted and re-created (*hard refresh*).
+* **-exit_on_finish**: The second will cause eclipse to exit once it has finished adding and refreshing the projects. Usage only make sense to be used in-conjunction with the first. 
 
 ## Example Usage
 
 ### Linux
 
-1. Import and open Eclipse
-./eclipse -console -noSplash -data ~/workspace -import ~/eclipse-import-projects-plugin
+1. Import and open Eclipse:
 
-2. Import and exit Eclipse once the project has been imported.
-./eclipse -console -noSplash -data ~/workspace -import ~/eclipse-import-projects-plugin -exit_on_finish
+        ./eclipse -console -noSplash -data ~/workspace -import ~/eclipse-import-projects-plugin
+
+2. Import and exit Eclipse once the project has been imported:
+
+        ./eclipse -console -noSplash -data ~/workspace -import ~/eclipse-import-projects-plugin -exit_on_finish
 
 ## Development and Deployment
 
@@ -43,7 +41,7 @@ The second will cause eclipse to exit once it has finished adding and refreshing
 
 6. Right Click on the project and click Export...
 
-7. Under Plug-in Development Click on 'Deployable plug-in and fragments' and click next
+7. Under Plug-in Development Click on Deployable plug-in and fragments and click next
 
 8. Ensure the project is checked and click Finish
 
