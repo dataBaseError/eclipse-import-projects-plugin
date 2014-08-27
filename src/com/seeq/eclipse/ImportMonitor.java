@@ -9,9 +9,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 public class ImportMonitor implements IProgressMonitor {
 	
 	private boolean exitOnFinish;
-
-	public ImportMonitor(boolean exitOnFinish) {
+	private int total;
+	private int count;
+	
+	public ImportMonitor(boolean exitOnFinish, int total) {
 		this.exitOnFinish = exitOnFinish;
+		this.total = total;
+		this.count = 0;
 	}
 
 	@PostConstruct
@@ -51,10 +55,19 @@ public class ImportMonitor implements IProgressMonitor {
 
 	@Override
 	public void done() {
-		if (exitOnFinish) {
+		
+		count++;
+		
+		if (exitOnFinish && count >= total ) {
 			// Kill the jvm once the task is done.
+			try {
+				Thread.sleep(30000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			System.exit(0);
 		}
+		
 	}
 
 	@Override

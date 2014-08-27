@@ -80,7 +80,8 @@ public class ImportProjects implements org.eclipse.ui.IStartup {
 			
 			IWorkspace workspace = ResourcesPlugin.getWorkspace();
 
-			ImportMonitor monitor = new ImportMonitor(exitOnFinish);
+			ImportMonitor monitor = new ImportMonitor(exitOnFinish, projectFiles.size());
+			
 			for (File projectFile : projectFiles) {
 				IProjectDescription description = null;
 				try {
@@ -90,8 +91,11 @@ public class ImportProjects implements org.eclipse.ui.IStartup {
 					
 					IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(description.getName());
 					
-					project.delete(false, true, null);
+					DeleteMonitor d_monitor = new DeleteMonitor(projectFile, monitor);
 					
+					project.delete(false, true, d_monitor);
+					
+					/*
 					project = ResourcesPlugin.getWorkspace().getRoot().getProject(description.getName());
 					
 					if (project.isOpen() == false) {
@@ -106,10 +110,10 @@ public class ImportProjects implements org.eclipse.ui.IStartup {
 					//System.out.println(String.format("Refreshing project %s", description.getName()));
 					project.refreshLocal(IResource.DEPTH_INFINITE, null);
 					System.out.println(String.format("Project Import %s SUCCESS", description.getName()));
-					workspace.save(true, monitor);
+					workspace.save(true, monitor);*/
 				} catch (CoreException e) {
 					if(description != null) {
-						System.out.println(String.format("Project Import %s FAILED", description.getName()));
+						System.out.println(String.format("Project Delete %s FAILED", description.getName()));
 					}
 					else {
 						e.printStackTrace();
